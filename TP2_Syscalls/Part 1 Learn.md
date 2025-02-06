@@ -73,15 +73,15 @@ libc.so.6 => /lib64/libc.so.6 (0x00007f0558600000)
 
 - lire un fichier stocké sur disque
   ```bash
-  0	read	read(2)	sys_read
+  0	read read(2)	sys_read
   ```
 - écrire dans un fichier stocké sur disque
   ```bash
-  1	write	write(2)	sys_write
+  1	write	write(2) sys_write
   ```
 - lancer un nouveau processus
   ```bash
-  57	fork	fork(2)	sys_fork
+  57	fork fork(2) sys_fork
   ```
   
 ### B. `objdump`
