@@ -89,13 +89,19 @@ libc.so.6 => /lib64/libc.so.6 (0x00007f0558600000)
 🌞 **Utiliser `objdump`** sur la commande `ls`
 
 - afficher le contenu de la section `.text`
-  - je vous laisse trouver la commande sur l'internet :D
+  ```bash
+  objdump -d -j .text /bin/ls
+  ```
 - mettez en évidence quelques lignes qui contiennent l'instruction `call`
-  - il devrait y en avoir plusieurs
-  - chaque `call` est un appel à une fonction, potentiellement importée *via* une librairie
+  ```bash
+  16ef9:       e8 82 da fe ff          callq  4980 <memset@plt>
+  16f3e:       e8 bd e1 ff ff          callq  15100 <_obstack_memory_used@@Base+0x47f0>
+  16fb3:       e8 f8 d8 fe ff          callq  48b0 <__stack_chk_fail@plt>
+  ```
 - mettez en évidence quelques lignes qui contiennent l'instruction `syscall`
-  - il y en a aucune normalement : `ls` ne contient pas directement de syscalls
-  - car il importe la Glibc, qui contient des syscalls, et les appelle avec `call`
+```bash
+Il n'y a pas d'instructions syscall directement dans ls car il utilise la Glibc pour effectuer les appels système.
+```
 
 🌞 **Utiliser `objdump`** sur la librairie Glibc
 
