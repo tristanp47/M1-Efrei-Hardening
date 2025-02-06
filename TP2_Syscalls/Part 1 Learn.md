@@ -49,10 +49,6 @@ ELF Header:
 
 ### C. `ldd`
 
-`ldd` est un outil qui permet de manipuler le *dynamic linker* de Linux. Le *dynamic linker* c'est un programme qui s'occupe de trouver les librairies nécessaires quand un autre programme se lance.
-
-**On peut utiliser `ldd` notamment pour visualiser de quelle librairie a besoin un programme donné.**
-
 🌞 **Utiliser `ldd` sur le programme `ls`**
 
 - afficher la liste des librairies que va utiliser `ls` pendant son fonctionnement
@@ -73,17 +69,12 @@ libc.so.6 => /lib64/libc.so.6 (0x00007f0558600000)
 
 ### A. Syscall list
 
-> Vous pourrez trouver une [liste des syscalls Linux sur un système x86_64 iciiii](https://filippo.io/linux-syscall-table/).
-
 🌞 **Donner le nom ET l'identifiant unique d'un syscall qui permet à un processus de...**
 
 - lire un fichier stocké sur disque
+#0	read	read(2)	sys_read
 - écrire dans un fichier stocké sur disque
 - lancer un nouveau processus
-
-> Pour la suite du TP, gardez-vous sous le coude les réponses apportées à cette question. Juste après vous allez regarder le langage machine contenu dans des exécutables à la recherche de l'appel à un *syscall*. Il faudra le repérer grâce à son identifiant !
-
-![Fork exec](./img/forkexec.png)
 
 ### B. `objdump`
 
