@@ -107,11 +107,17 @@ Il n'y a pas d'instructions syscall directement dans ls car il utilise la Glibc 
 
 - vous avez repéré son chemin exact au point d'avant avec `ldd`
 - mettez en évidence quelques lignes qui contiennent l'instruction `syscall`
-  - il devrait y en avoir pas mal
-  - chaque ligne qui contient l'instruction `syscall` est la dernière d'un bloc de code qui est le syscall lui-même
-- trouvez l'instrution `syscall` qui exécute le syscall `open()`
-
-> Pour exécuter un `syscall`, le programme met dans le registre `eax` l'identifiant du syscall (avec l'instruction `mov`) puis exécute l'instruction `syscall`. Vous cherchez donc une instruction `syscall` précédé d'un `mov` qui met l'identifiant de `open()` dans `eax`.
-
-![How it works](./img/syscall_work.jpg)
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ objdump -d -j .text /lib64/libc.so.6 | grep syscall
+  000000000003f4d0 <__GI___syscall_clock_gettime>:
+   3f4d9:       0f 05                   syscall
+  0000000000108730 <time_syscall>:
+  108739:       0f 05                   syscall
+  ```
+- trouvez l'instrution `syscall` qui exécute le syscall `close()`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ objdump -d /lib64/libc.so.6 | grep 'syscall' -B2 | grep '$0x3' -A3
+  167a02:       b8 03 00 00 00          mov    $0x3,%eax
+  167a07:       0f 05                   syscall
+  ```
 
