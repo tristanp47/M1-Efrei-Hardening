@@ -398,8 +398,9 @@ Status for the jail: sshd
    |- Total banned:	1
    `- Banned IP list:	10.0.1.8
 
+#On léve le bannissement de l'adresse IP de ma machine
 [user1@localhost ~]$ sudo fail2ban-client set sshd unbanip 10.0.1.8
-1
+
 [user1@localhost ~]$ sudo fail2ban-client status sshd
 Status for the jail: sshd
 |- Filter
