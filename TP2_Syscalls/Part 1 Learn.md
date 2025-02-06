@@ -1,66 +1,38 @@
 # Part I : Learn
 
-Dans cette partie, je vous fais (re)découvrir quelques commandes usuelles quand on travaille autour des programmes et des processus.
-
-**Au menu : on dissèque des programmes, et on repère les syscalls qu'ils utilisent.**
-
-## Sommaire
-
-- [Part I : Learn](#part-i--learn)
-  - [Sommaire](#sommaire)
-  - [1. Anatomy of a program](#1-anatomy-of-a-program)
-    - [A. `file`](#a-file)
-    - [B. `readelf`](#b-readelf)
-    - [C. `ldd`](#c-ldd)
-  - [2. Syscalls basics](#2-syscalls-basics)
-    - [A. Syscall list](#a-syscall-list)
-    - [B. `objdump`](#b-objdump)
-
 ## 1. Anatomy of a program
 
-**Un programme est un fichier *exécutable*. C'est à dire que :** 
-
-- c'est un simple fichier
-- il est composé de plusieurs sections
-  - la section `.text` contient les instructions du programme pour le CPU
-  - les autres sections contiennent essentiellement des metadonnées
-- il peut être compilé...
-  - statiquement : tout est dans le programme
-  - dynamiquement : le programme pourra faire appel à des librairies du système
-- il est marqué comme étant "exécutable"
-  - sur Linux, on donne la permission d'exécution avec `chmod`
-
-Dans cette partie, on va voir quelques outils très usuels pour obtenir des infos sur un programme.
-
 ### A. `file`
-
-`file` est une commande uqi permet de déterminer le type d'un fichier.
-
-Ceci ne repose pas du tout sur l'extension du fichier. `file` regarde directement les bits qui composent le fichier pour en déterminer le type. Il se concentre sur les premiers octets du fichiers qui contient généralement des métadonnées suffisantes pour déterminer le type.
 
 🌞 **Utiliser `file` pour déterminer le type de :**
 
 - la commande `ls`
+```bash
+[user1@efrei-xmg4agau1 ~]$ file /usr/bin/ls
+/usr/bin/ls: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=fe37adecca22a782c4fb274ae601f220cc1fbb4d, for GNU/Linux 3.2.0, stripped
+```
 - la commande `ip`
+```bash
+[user1@efrei-xmg4agau1 ~]$ file /usr/sbin/ip
+/usr/sbin/ip: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=77a2f5899f0529f27d87bb29c6b84c535739e1c7, for GNU/Linux 3.2.0, stripped
+```
 - un fichier `.mp3` que vous aurez téléchargé sur le disque de la VM
-
-> Le format des exécutables sous les OS Linux est appelé ELF. ELF est le format qui définit l'ordre des octets dans un programme, le fait qu'il doit être composé de plusieurs sections, comment il doit indiquer les librairies externes dont il a besoin, etc.
+```bash
+[user1@efrei-xmg4agau1 ~]$ file SoundHelix-Song-1.mp3
+SoundHelix-Song-1.mp3: Audio file with ID3 version 2.3.0, contains:MPEG ADTS, layer III, v1, 192 kbps, 44.1 kHz, Stereo
+```
 
 ### B. `readelf`
-
-`readelf` permet d'obtenir des informations sur un fichier ELF : un exécutable Linux.
-
-De la même façon qu'un fichier texte possède des numéros de ligne quand on l'affiche, si on affiche le contenu d'un programme, chaque ligne est numérotée.
-
-Chaque ligne du programme a donc une adresse, qui est notée en hexadécimal.
-
-`readelf` permet notamment de voir de quelle adresse à quelle adresse se trouve  tell ou telle section.
 
 🌞 **Utiliser `readelf` sur le programme `ls`**
 
 - afficher le *header* du programme
   - il contient toutes les métadonnées principales du programme
   - c'est l'option `readelf -h`
+```bash
+[user1@efrei-xmg4agau1 ~]$ readelf -h /usr/bin/ls
+ELF Header:
+```
 - afficher la liste des sections du programme
   - c'est l'option `readelf -S`
 - déterminer à quel adresse commence le code du programme
