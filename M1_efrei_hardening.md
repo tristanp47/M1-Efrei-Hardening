@@ -283,30 +283,73 @@ tmpfs on /tmp type tmpfs (rw,nosuid,nodev,noexec,relatime,seclabel,size=2097152k
 
 #### Changement du port SSH:
 ```bash
+#Avec la commande ps aux on cherche l'identifiant du processus openssh ici 687
+[user1@localhost ~]$ ps aux | grep sshd | grep -v grep
+root         687  0.0  1.9  16772  9216 ?        Ss   11:55   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 star
+
+#Dans la configuration de sshd on modifie le port pour qu'il soit 2222
 sudo nano /etc/ssh/sshd_config
 Port 2222
-sudo systemctl restart sshd
-```
 
-#### Vérification:
-```bash
-sudo ss -tuln | grep 2222
+#Puis on relance le service sshd
+sudo systemctl restart sshd
+
+#On vérifie que SSH écoute bien maintenant sur le port 2222
+[user1@localhost ~]$ sudo ss -tuln | grep 2222
+tcp   LISTEN 0      128          0.0.0.0:2222      0.0.0.0:*
+tcp   LISTEN 0      128             [::]:2222         [::]:*
+
+#On peut donc maintenant établir une connection
+PS C:\Users\trist> ssh -p 2222 user1@10.0.1.8
+user1@10.0.1.8's password:
+Last login: Thu Feb  6 12:22:22 2025 from 10.0.1.8
 ```
 
 ### 2. Authentication modes
 ```bash
-sudo nano /etc/ssh/sshd_config
+#Sur mon hote on va générer une clé ssh 
+PS C:\Users\trist> ssh-keygen -t rsa -b 4096 -C "test@example.com"
+
+#On va ensuite copier la clé depuis mon hote vers le serveur ssh depuis powershell
+PS C:\Users\trist> type $env:USERPROFILE\.ssh\id_rsa.pub | ssh -p 2222 user1@10.0.1.8 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+
+#Je peux maintenant me connecter à mon hote sans mot de passe
+PS C:\Users\trist> ssh -p 2222 user1@10.0.1.8
+Last login: Thu Feb  6 12:29:20 2025 from 10.0.1.1
+[user1@localhost ~]$
+
+#Dans le fichier de config sshd on ajoute la ligne suivante pour interdire l'authentification par mot de passe:
 PasswordAuthentication no
+
+#Un mot de passe ne nous est donc plus demandé pour s'authentifier
+PS C:\Users\trist> ssh -p 2222 user1@10.0.1.8
+Last login: Thu Feb  6 12:35:36 2025 from 10.0.1.1
+
+#Dans le fichier de config sshd on ajoute la ligne suivante pour interdire l'authentification par root:
 PermitRootLogin no
+
+#On ne peut pas s'authentifier avec root
+PS C:\Users\trist> ssh -p 2222 root@10.0.1.8
+root@10.0.1.8: Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
 ```
 
 ### 3. Further hardening
 ```bash
+
+#Dans la config SSH "PermitEmptyPasswords no" Désactiver les mots de passe vides.
 PermitEmptyPasswords no
+
+#Dans la config SSH on peut Configurer un délai d'inactivité :
 ClientAliveInterval 300
 ClientAliveCountMax 0
+
+#On peut limiter le nombres d'utilisateurs autorisés
 AllowUsers user1 user2
+
+#On peut désactiver le transfert X11 pour réduire les risques de sécurité liés à l'affichage graphique.
 X11Forwarding no
+
+#Il est également possible de configurer un message de bannière d'avertissement.
 Banner /etc/issue.net
 ```
 
@@ -327,6 +370,44 @@ findtime = 300
 
 #### Vérification des bannissements:
 ```bash
-sudo fail2ban-client status
-sudo fail2ban-client status sshd
+#On installe fail2ban:
+sudo yum install fail2ban
+
+#On modifie la config pour qu'elle soit en accord avec ce que l'on veut un maximum de 7 tentatives,
+#en cas de multiples tentatives de connexion échouées sur le serveur SSH, l'utilisateur sera banni
+#c'est l'adresse IP de la personne qui fait des connexions échouées de façon répétée qui est blacklistée
+ 
+[user1@localhost ~]$ sudo nano /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = 2222
+filter = sshd
+logpath = /var/log/secure
+maxretry = 7
+findtime = 300
+
+#On vérifie que l'adresse IP est bien bannie
+[user1@localhost ~]$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	7
+|  `- Journal matches:	_SYSTEMD_UNIT=sshd.service + _COMM=sshd
+`- Actions
+   |- Currently banned:	1
+   |- Total banned:	1
+   `- Banned IP list:	10.0.1.8
+
+[user1@localhost ~]$ sudo fail2ban-client set sshd unbanip 10.0.1.8
+1
+[user1@localhost ~]$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	7
+|  `- Journal matches:	_SYSTEMD_UNIT=sshd.service + _COMM=sshd
+`- Actions
+   |- Currently banned:	0
+   |- Total banned:	1
+   `- Banned IP list:	 
 ```
