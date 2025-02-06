@@ -35,9 +35,17 @@ ELF Header:
 ```
 - afficher la liste des sections du programme
   - c'est l'option `readelf -S`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ readelf -S /usr/bin/ls
+  There are 30 section headers, starting at offset 0x21ec8:
+  ```
 - déterminer à quel adresse commence le code du programme
   - pour rappel, le code est dans la section `.text`
   - vous devriez voir cette adresse dans la sortie de `readelf -S`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ readelf -S /usr/bin/ls | grep '.text'
+  [15] .text             PROGBITS         0000000000004d50  00004d50
+  ```
 
 ### C. `ldd`
 
