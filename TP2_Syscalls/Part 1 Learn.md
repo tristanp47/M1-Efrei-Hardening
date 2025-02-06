@@ -72,13 +72,19 @@ libc.so.6 => /lib64/libc.so.6 (0x00007f0558600000)
 🌞 **Donner le nom ET l'identifiant unique d'un syscall qui permet à un processus de...**
 
 - lire un fichier stocké sur disque
-#0	read	read(2)	sys_read
+  ```bash
+  0	read	read(2)	sys_read
+  ```
 - écrire dans un fichier stocké sur disque
+  ```bash
+  1	write	write(2)	sys_write
+  ```
 - lancer un nouveau processus
-
+  ```bash
+  57	fork	fork(2)	sys_fork
+  ```
+  
 ### B. `objdump`
-
-`objdump` permet de désassembler un programme, c'est à dire d'afficher le code contenu par un exécutable, sous forme de langage assembleur compréhensible par les humains (un peu, beaucoup plus qu'une purée d'octets en tout cas !)
 
 🌞 **Utiliser `objdump`** sur la commande `ls`
 
