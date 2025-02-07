@@ -137,5 +137,7 @@ $ strace echo yo
 - `sysdig` permet d'enregistrer ce qu'il capture dans un fichier pour analyse ultérieure
 - l'extension c'est `.scap` par convention
 - **capturez les *syscalls*  effectués par un `curl example.org`**
-
-> `sysdig` est un outil moderne qui sert de base à toute la suite d'outils de la boîte du même nom. On pense par exemple à Falco qui permet de tracer, monitorer, lever des alertes sur des *syscalls* , au sein d'un cluster Kubernetes.
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo sysdig -w curl.scap
+  [user1@efrei-xmg4agau1 ~]$ curl example.org
+  ```
