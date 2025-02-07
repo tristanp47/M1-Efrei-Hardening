@@ -128,6 +128,9 @@ $ strace echo yo
 - ça va bourriner sec, vu que vous êtes connectés en SSH étou
 - juste pour vous éduquer un peu + à ce que fait le kernel à chaque seconde qui passe
 - donner la commande pour ça, pas besoin de me mettre le résultat :d
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo sysdig user.name=user1
+  ```
 
 🌞 **Livrez le fichier `curl.scap` dans le dépôt git de rendu**
 
