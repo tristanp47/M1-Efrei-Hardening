@@ -1,32 +1,5 @@
 # Part III : CGroup
 
-➜ **Les *CGroup* c'est un mécanisme du noyau Linux pour faire des groupes de processus et restreindre leur accès aux ressources de la machine.**
-
-On parle ici notamment de restreindre l'accès à :
-
-- la mémoire (par exemple : on définit une quantité de mémoire maximum que le groupe de processus aura le droit d'utiliser)
-- le CPU (par exemple : on définit un poids pour qu'un groupe de processus soit prioritaire)
-- écriture/lecture (par exemple : limitation des écritures sur le disque)
-- d'autres trucs, c'pour vous donner une idée
-
-➜ **Les *CGroup* permettent aussi de monitorer en temps réel l'accès aux ressources d'un groupe de processus.**
-
-Vous pouvez constater ça avec les commandes `systemd-cgls` et `systemd-cgtop` notamment.
-
-![Cgroups](./img/cgroup.jpg)
-
-> C'est dessiné par **[Julia Evans](https://jvns.ca/)**, elle a fait plein de ptites illustrations tech de ce genre, je recommande :D
-
-## Sommaire
-
-- [Part III : CGroup](#part-iii--cgroup)
-  - [Sommaire](#sommaire)
-  - [1. Explore](#1-explore)
-  - [2. Do it](#2-do-it)
-  - [3. systemd](#3-systemd)
-    - [A. One-shot](#a-one-shot)
-    - [B. Real service](#b-real-service)
-
 ## 1. Explore
 
 Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cgroup`.
@@ -34,29 +7,64 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
 🌞 **Afficher...** :
 
 - la liste des controllers *CGroups* dispos sur le système
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ cat /sys/fs/cgroup/cgroup.controllers
+  ```
 - la quantité de mémoire max que vous êtes autorisés à utiliser dans votre session utilisateur
+  - par défaut, sous Rocky, le *controller* memory n'est pas activé : normal si vous ne voyez aucun fichier `memory.max`
+  - si c'est le cas, ça veut dire qu'aucune restriction RAM est en place (vous devez justement constater ça)
+    ```bash
+    [user1@efrei-xmg4agau1 ~]$ cat /sys/fs/cgroup/user.slice/memory.max
+    max
+    ```
 - les noms de tous les *CGroups* créés
   - ce sont tous les sous-dossiers de `/sys/fs/cgroup`
   - il devrait y avoir au moins les slices et scopes de systemd, on en parle plus bas
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ ls /sys/fs/cgroup/
+  ```
+
 
 ## 2. Do it
 
 🌞 **Créer un nouveau *CGroup*** :
 
 - appelez-le `meow`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo mkdir /sys/fs/cgroup/meow
+  ```
 - activez les controllers `cpu` `cpuset` et `memory` s'ils ne le sont pas déjà
+  ```bash
+  [user1@efrei-xmg4agau1 meow]$ echo "+cpu +cpuset +memory" | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+  +cpu +cpuset +memory
 
-> Vous devez donc créer le dossier `/sys/fs/cgroup/meow/` avec un simple `mkdir`, puis interagir avec les fichiers qui s'y trouvent (le dossier a été automatiquement populé).
+  [user1@efrei-xmg4agau1 meow]$ cat cgroup.controllers
+  cpuset cpu memory pids
+  ```
 
 🌞 **Créer un nouveau sous-CGroup** :
 
 - appelez-le `task1`
-- on parle de créer le dossier `/sys/fs/cgroup/meow/task1/` 
+- on parle de créer le dossier `/sys/fs/cgroup/meow/task1/`
+  ```bash
+  [user1@efrei-xmg4agau1 task1]$ cat /sys/fs/cgroup/meow/task1/cgroup.controllers  
+  cpuset cpu memory
+  ```
 - prouvez que les controllers activés sur `meow` ont bien été hérités
+  ```bash
+  [user1@efrei-xmg4agau1 task1]$ cat /sys/fs/cgroup/meow/task1/cgroup.controllers  
+  cpuset cpu memory
+  ```
 
 🌞 **Mettez en place une limitation RAM**
 
 - définissez une limite de 150M de RAM pour ce CGroup `task1`
+  ```bash
+  [user1@efrei-xmg4agau1 task1]$ echo "150M" | sudo tee /sys/fs/cgroup/meow/task1/memory.max
+  150M
+  [user1@efrei-xmg4agau1 task1]$ cat /sys/fs/cgroup/meow/task1/memory.max
+  157286400
+  ```
 
 🌞 **Prouvez que la limite est effective**
 
@@ -67,8 +75,6 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
 5. constatez que le processus `stress-ng` est tué en boucle dès qu'il remplit la RAM au delà de la limite
 
 > On rappelle que tout processus lancé par un processus existant se retrouvera par défaut dans le même *CGroup* que son parent. C'est pour ça que vous ajoutez votre shell `bash` au *CGroup* : tout ce que vous exécuterez depuis ce `bash` sera exécuté dans le même *CGroup* que lui. Ha et le truc qui tue votre processus quand il prendre trop de RAM, c'est le [**OOM-killer**](https://en.wikipedia.org/wiki/Out_of_memory).
-
-![OOM killer](./img/oom_killer.png)
 
 🌞 **Créer un nouveau sous-*CGroup*** :
 
