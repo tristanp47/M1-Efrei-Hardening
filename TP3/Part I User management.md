@@ -1,68 +1,38 @@
-# Part I : User management
+# Part I : A bit of exploration
 
-**Hum, cette partie est censée être envoyée vite fait bien fait ! Prouvez-le moi :D**
+Commençons par un peu d'exploration manuelle des pseudo-filesystems que sont `/proc` et `/sys`.
 
-## 1. Existing users
+⚠️⚠️⚠️ **Vous n'utiliserez que les commandes `cat`, `ls` et `cd` (ou commandes similaires comme du `grep` bien sûr) pour réaliser cette partie.**
 
-🌞 **Déterminer l'existant :**
+![cat /proc](./img/cat_proc.png)
 
-- lister tous les utilisateurs créés sur la machine
-- lister tous les groupes d'utilisateur
-- déterminer la liste des groupes dans lesquels se trouvent votre utilisateur
+## Sommaire
 
-🌞 **Lister tous les processus qui sont actuellement en cours d'exécution, lancés par `root`**
+- [Part I : A bit of exploration](#part-i--a-bit-of-exploration)
+  - [Sommaire](#sommaire)
+  - [1. /proc](#1-proc)
+  - [2. /sys](#2-sys)
 
-🌞 **Lister tous les processus qui sont actuellement en cours d'exécution, lancés par votre utilisateur**
+## 1. /proc
 
-🌞 **Déterminer le hash du mot de passe de `root`**
+🌞 **Afficher...** :
 
-🌞 **Déterminer le hash du mot de passe de votre utilisateur**
+- l'état complet de la mémoire (RAM)
+- le nombre de coeurs que votre CPU a (uniquement ce nombre)
+- le nombre de processus lancés (uniquement ce nombre)
+- la ligne de commande utilisée pour lancer le kernel actuel
+- la liste des connexions TCP actuelles (même si c'est un peu imbuvable avec nos p'tits yeux)
+- la valeur actuelle de la *swappiness* (cf le tip ci-dessous)
 
-🌞 **Déterminer la fonction de hachage qui a été utilisée**
+> La `swap` est une partition sur le disque qui va être utilisée automatiquement par l'OS si la mémoire (RAM) s'apprête à être pleine : l'OS va décharger une partie des machins en RAM pour les mettre sur la partition de `swap`. Ca rame de fou dukoo hein, mais ça continue de fonctionner. La *swappiness* détermine le pourcentage de remplissage de la mémoire à partir duquel l'OS va commencer à utiliser la `swap` (à "swapper" comme on dit :d).
 
-🌞 **Déterminer, pour l'utilisateur `root`** :
+## 2. /sys
 
-- son shell par défaut
-- le chemin vers son répertoire personnel
+> N'oubliez jamais les pages du `man`, c'est un très bonne doc souvent. [Là encore pour **sysfs** (`/sys`)](https://man7.org/linux/man-pages/man5/sysfs.5.html).
 
-🌞 **Déterminer, pour votre utilisateur** :
+🌞 **Afficher...** :
 
-- son shell par défaut
-- le chemin vers son répertoire personnel
-
-🌞 **Afficher la ligne de configuration du fichier `sudoers` qui permet à votre utilisateur d'utiliser `sudo`**
-
-![sudo](./img/sudo.svg)
-
-
-## 2. User creation and configuration
-
-🌞 **Créer un utilisateur :**
-
-- doit s'appeler `meow`
-- ne doit appartenir QUE à un groupe nommé `admins`
-- ne doit pas avoir de répertoire personnel utilisable
-- ne doit pas avoir un shell utilisable
-
-> Il s'agit donc ici d'un utilisateur avec lequel on pourra pas se connecter à la machine (ni en console, ni en SSH).
-
-🌞 **Configuration `sudoers`**
-
-- ajouter une configuration `sudoers` pour que l'utilisateur `meow` puisse exécuter seulement et uniquement les commandes `ls`, `cat`, `less` et `more` en tant que votre utilisateur
-- ajouter une configuration `sudoers` pour que les membres du groupe `admins` puisse exécuter seulement et uniquement la commande `apt` en tant que `root`
-- ajouter une configuration `sudoers` pour que votre utilisateur puisse exécuter n'importe quel commande en tant `root`, sans avoir besoin de saisir un mot de passe
-- prouvez que ces 3 configurations ont pris effet (vous devez vous authentifier avec le bon utilisateur, et faire une commande `sudo` qui doit fonctioner correctement)
-
-> Pour chaque point précédent, c'est une seule ligne de configuration à ajouter dans le fichier `sudoers` de la machine.
-
-## 3. Hackers gonna hack
-
-🌞 **Déjà une configuration faible ?**
-
-- l'utilisateur `meow` est en réalité complètement `root` sur la machine hein là. Prouvez-le.
-- proposez une configuration similaire, sans présenter cette faiblesse de configuration
-  - vous pouvez ajouter de la configuration
-  - ou supprimer de la configuration
-  - du moment qu'on garde des fonctionnalités à peu près équivalentes !
-
+- la liste des périphériques de types bloc reconnus par l'OS (genre les disques durs par exemple koa)
+- la liste des modules kernel qui sont actuellements en cours d'utilisation
+- la liste des cartes réseau
 
