@@ -61,15 +61,25 @@
 
 - avec une commande `unshare`
 - lancez un `bash` à l'intérieur
-
-> `unshare` est aussi le nom de l'appel système (syscall) qui permet de demander au kernel de créer un *namespace*. Ainsi, cette commande, c'est vraiment juste appeler ce syscall depuis la ligne de commande.
-
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo unshare --net --pid --fork bash
+  [root@efrei-xmg4agau1 user1]#
+  ```
+  
 🌞 **Prouvez que votre nouveau *namespace* est bien là**
 
 - déjà un `ip a` devrait montrer aucune des cartes réseau depuis l'intérieur du *namespace*
+  ```bash
+  [root@efrei-xmg4agau1 user1]# ip a
+  1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+  ```
 - et on peut `lsns` pour voir ce nouveau *namespace*
 - et on peut voir avec un `ls -al` dans `/proc` que ce nouveau terminal est dans un autre *namespace* `network`
-
+    ```bash
+  [root@efrei-xmg4agau1 user1]# ls -l /proc/$$/ns/
+  ```
+    
 ### B. pid
 
 🌞 **Créer un nouveau *namespace* `pid`**
