@@ -83,6 +83,13 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
    Swap:            819          14         805
    ```
 4. ajoutez votre shell `bash` actuel au *CGroup* `task1`
+   ```bash
+   [user1@efrei-xmg4agau1 cgroup]$ echo $$ | sudo tee /sys/fs/cgroup/meow/task1/cgroup.procs
+   817
+   [user1@efrei-xmg4agau1 cgroup]$ cat /sys/fs/cgroup/meow/task1/cgroup.procs
+   817
+   18495
+   ```
 5. utilisez de nouveau `stress-ng`
 6. constatez que le processus `stress-ng` est tué en boucle dès qu'il remplit la RAM au delà de la limite
 
