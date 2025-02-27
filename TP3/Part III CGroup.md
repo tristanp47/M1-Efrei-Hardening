@@ -252,4 +252,7 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
   #Limitation du CPU
   [user1@efrei-xmg4agau1 ~]$ cat /sys/fs/cgroup/system.slice/web.service/cpu.max
   50000 100000
+
+  #Limitation de lecture et d'écriture d'un disque
+  [user1@efrei-xmg4agau1 ~]$ sudo cat /sys/fs/cgroup/system.slice/web.service/io.max
   ```
