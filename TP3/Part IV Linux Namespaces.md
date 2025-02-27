@@ -40,6 +40,18 @@
 🌞 **Lister tous les *namespaces* en cours d'utilisation**
 
 - avec une simple commande `lsns`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ lsns
+          NS TYPE   NPROCS   PID USER  COMMAND
+  4026531834 time        4   807 user1 /usr/lib/systemd/systemd --user
+  4026531835 cgroup      4   807 user1 /usr/lib/systemd/systemd --user
+  4026531836 pid         4   807 user1 /usr/lib/systemd/systemd --user
+  4026531837 user        4   807 user1 /usr/lib/systemd/systemd --user
+  4026531838 uts         4   807 user1 /usr/lib/systemd/systemd --user
+  4026531839 ipc         4   807 user1 /usr/lib/systemd/systemd --user
+  4026531840 net         4   807 user1 /usr/lib/systemd/systemd --user
+  4026531841 mnt         4   807 user1 /usr/lib/systemd/systemd --user
+  ```
 
 ## 2. Create
 
