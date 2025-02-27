@@ -86,6 +86,9 @@
 
 - avec une commande `unshare`
 - lancez un `bash` à l'intérieur
+  ```bash
+  [root@efrei-xmg4agau1 user1]# sudo unshare --pid --fork bash
+  ```
 
 🌞 **Prouvez que votre nouveau *namespace* est bien là**
 
