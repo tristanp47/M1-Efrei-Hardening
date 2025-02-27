@@ -45,6 +45,9 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
 🌞 **Créer un nouveau sous-CGroup** :
 
 - appelez-le `task1`
+  ```bash
+  [user1@efrei-xmg4agau1 cgroup]$ sudo mkdir /sys/fs/cgroup/meow/task1
+  ```
 - on parle de créer le dossier `/sys/fs/cgroup/meow/task1/`
   ```bash
   [user1@efrei-xmg4agau1 task1]$ cat /sys/fs/cgroup/meow/task1/cgroup.controllers  
