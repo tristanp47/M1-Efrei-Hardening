@@ -1,42 +1,41 @@
 # Part IV : Linux Namespaces
 
-> Le terme *namespace* est utilisé dans plein plein de contextes différents en informatique. Ici, on parle des *namespaces* du noyau Linux (qui n'a rien à votre avec les *namespaces* Java ou Kubernetes ou autres.)
-
-➜ **Les Linux namespaces permettent d'isoler les processus les uns des autres, en leur proposant une vue limitée et restreinte de l'OS.**
-
-Ici on parle pas de l'accès aux ressources (matérielles) de la machine comme avec les CGroups, mais plutôt de l'accès aux features de l'OS.
-
-➜ **Les namespaces isolent notamment les processus en terme de** (liste non-exhaustive) :
-
-- **PID** : les processus voient qu'une partie des autres processus qui s'exécutent
-- **network** : les processus ne voient pas toutes les cartes réseau du système
-- **user** : les processus n'ont pas les même users (pas les même fichiers `/etc/passwd` et `/etc/shadow` par exemple)
-- **mount** : les processus ne voient pas les même partitions et points de montage que les autres
-
-> On peut choisir d'isoler un processus uniquement en terme de network ou uniquement en terme de PID, ou tout à la fois, y'a pas de contraintes à ce niveau là.
-
-![container](./img/container.png)
-
-## Sommaire
-
-- [Part IV : Linux Namespaces](#part-iv--linux-namespaces)
-  - [Sommaire](#sommaire)
-  - [1. Explore](#1-explore)
-  - [2. Create](#2-create)
-    - [A. net](#a-net)
-    - [B. pid](#b-pid)
-  - [3. AND MY CONTAINERS](#3-and-my-containers)
-    - [A. Quick install](#a-quick-install)
-    - [B. A simple container](#b-a-simple-container)
-    - [C. CGroup](#c-cgroup)
-
 ## 1. Explore
 
 🌞 **Utiliser /proc**
 
 - déterminer les *namespaces* de votre `bash` actuel
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo ls -l /proc/$$/ns
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 cgroup -> 'cgroup:[4026531835]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 ipc -> 'ipc:[4026531839]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 mnt -> 'mnt:[4026531841]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 net -> 'net:[4026531840]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 pid -> 'pid:[4026531836]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 pid_for_children -> 'pid:[4026531836]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 time -> 'time:[4026531834]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 time_for_children -> 'time:[4026531834]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 user -> 'user:[4026531837]'
+  lrwxrwxrwx. 1 user1 user1 0 Feb 27 13:03 uts -> 'uts:[4026531838]'
+  ```
 - déterminer les *namespaces* du processuis qui porte l'identifiant PID 1
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo ls -l /proc/1/ns
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 cgroup -> 'cgroup:[4026531835]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 ipc -> 'ipc:[4026531839]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 mnt -> 'mnt:[4026531841]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 net -> 'net:[4026531840]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 pid -> 'pid:[4026531836]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 pid_for_children -> 'pid:[4026531836]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 time -> 'time:[4026531834]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 time_for_children -> 'time:[4026531834]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 user -> 'user:[4026531837]'
+  lrwxrwxrwx. 1 root root 0 Feb 27 13:08 uts -> 'uts:[4026531838]'
+  ```
 - ils devraient être identiques
+  ```bash
+  oui
+  ```
 
 🌞 **Lister tous les *namespaces* en cours d'utilisation**
 
