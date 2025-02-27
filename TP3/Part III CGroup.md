@@ -69,10 +69,19 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
 🌞 **Prouvez que la limite est effective**
 
 1. utilisez la commande `stress-ng` pour remplir la mémoire de la machine
-2. constatez que la RAM est pleine
-3. ajoutez votre shell `bash` actuel au *CGroup* `task1`
-4. utilisez de nouveau `stress-ng`
-5. constatez que le processus `stress-ng` est tué en boucle dès qu'il remplit la RAM au delà de la limite
+   ```bash
+   [user1@efrei-xmg4agau1 ~]$ stress-ng --vm 4 --vm-bytes 100% --vm-keep --timeout 30s
+   ```
+3. constatez que la RAM est pleine
+   ```bash
+   [user1@efrei-xmg4agau1 ~]$ free -m
+                  total        used        free      shared  buff/cache   available
+   Mem:             456         391           9          17          85          65
+   Swap:            819          14         805
+   ```
+4. ajoutez votre shell `bash` actuel au *CGroup* `task1`
+5. utilisez de nouveau `stress-ng`
+6. constatez que le processus `stress-ng` est tué en boucle dès qu'il remplit la RAM au delà de la limite
 
 > On rappelle que tout processus lancé par un processus existant se retrouvera par défaut dans le même *CGroup* que son parent. C'est pour ça que vous ajoutez votre shell `bash` au *CGroup* : tout ce que vous exécuterez depuis ce `bash` sera exécuté dans le même *CGroup* que lui. Ha et le truc qui tue votre processus quand il prendre trop de RAM, c'est le [**OOM-killer**](https://en.wikipedia.org/wiki/Out_of_memory).
 
