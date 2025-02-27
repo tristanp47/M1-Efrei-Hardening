@@ -141,35 +141,29 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
 
 ## 3. systemd
 
-Par défaut, sous Linux, y'a systemd (ouais encore lui). Il utilise pas mal les *CGroup* nativement. Il fait naturellement deux trucs :
-
-- **il met les `service` dans des `slice`s**
-  - créer un `slice` systemd, c'est juste créer un cgroup (dont le nom se terminera par `.slice`)
-  - tous les `service`s sont forcément dans un `slice`
-- **il met des programmes lancés à l'extérieur (genre des trucs qui sont pas des `services`) dans des `scope`**
-  - c'est pareil : un `scope` c'est juste un CGroup créé automatiquement par systemd, dont le nom se termine par `.scope`
-  - ça permet à systemd de gérer certains processus même si c'est pas lui qui les lance
-  - par exemple quand t'ouvres une session SSH n_n
-
-Bref, l'un des rôles principaux de systemd c'est lancer et gérer des processus (services). Il est donc tout naturel qu'il utilise les *CGroups* Linux pour mener à bien ce job.
-
 ### A. One-shot
-
-Y'a une commande rigolote et parfois pratique qui permet de jouer avec tout ça. Une commande qui permet de créer un service système temporaire à la volée en une seule ligne de commande : `systemd-run`.
-
-> Pour plusieurs tests dans le TP, on se servira du serveur Web embarqué par Python. Il se lance en une seule commande, fait des trucs sur le système (serveur web, donc il lit des fichiers, fait des connexions réseau), c'est parfait pour faire des tests ! Pour le lancer : `python -m http.server 8888`.
 
 🌞 **Lancer un serveur Web Python sous forme de service temporaire**
 
 - avec la commande `python -m http.server <PORT>`
 - n'oubliez pas d'ouvrir ce port dans le firewall pour tester
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo firewall-cmd --permanent --add-port=8888/tcp
+  [user1@efrei-xmg4agau1 ~]$ sudo firewall-cmd --reload
+  ```
 - il faudra le lancer avec la commande `systemd-run` pour en faire un service temporaire
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo systemd-run -u meow_test sleep 9999
+  Running as unit: meow_test.service
+  ```
 - affichez le `status` du service pour prouver qu'il run
-
-```bash
-# lancer un sleep sous la forme d'un service nommé meow_test.service
-sudo systemd-run -u meow_test sleep 9999
-```
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ systemctl status meow_test
+    ● meow_test.service - /bin/sleep 9999
+         Loaded: loaded (/run/systemd/transient/meow_test.service; transient)
+      Transient: yes
+         Active: active (running) since Thu 2025-02-27 11:35:03 CET; 12s ago
+  ```
 
 🌞 **Appliquer à la volée des restrictions**
 
