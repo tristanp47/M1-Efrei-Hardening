@@ -153,38 +153,79 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
   ```
 - il faudra le lancer avec la commande `systemd-run` pour en faire un service temporaire
   ```bash
-  [user1@efrei-xmg4agau1 ~]$ sudo systemd-run -u meow_test sleep 9999
+  [user1@efrei-xmg4agau1 ~]$ sudo systemd-run -u meow_test /bin/bash -c "python3 -m http.server 8888 & sleep 9999"
   Running as unit: meow_test.service
   ```
 - affichez le `status` du service pour prouver qu'il run
   ```bash
   [user1@efrei-xmg4agau1 ~]$ systemctl status meow_test
-    ● meow_test.service - /bin/sleep 9999
-         Loaded: loaded (/run/systemd/transient/meow_test.service; transient)
-      Transient: yes
-         Active: active (running) since Thu 2025-02-27 11:35:03 CET; 12s ago
+  ● meow_test.service - /bin/bash -c python3 -m http.server 8888 & sleep 9999
+       Loaded: loaded (/run/systemd/transient/meow_test.service; transient)
+    Transient: yes
+       Active: active (running) since Thu 2025-02-27 11:54:11 CET; 6s ago
+     Main PID: 24716 (bash)
+        Tasks: 3 (limit: 2664)
+       Memory: 9.7M
+          CPU: 62ms
+       CGroup: /system.slice/meow_test.service
+               ├─24716 /bin/bash -c "python3 -m http.server 8888 & sleep 9999"
+               ├─24717 python3 -m http.server 8888
+               └─24718 sleep 9999
   ```
 
 🌞 **Appliquer à la volée des restrictions**
 
 - avec l'option `-p` de `systemd-run` vous pouvez préciser des paramètres pour le service
 - utilisez le paramètre `MemoryMax` pour mettre en place une limite à 234M
-
-> En vrai, `systemd-run` est un tool vraiment pratique pour limiter l'accès aux ressources d'un process qu'on lance oneshot.
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo systemd-run -u meow_test -p MemoryMax=234M /bin/bash -c "python3 -m http.server 8888 & sleep 9999"
+  ```
 
 🌞 **Restrictions *CGroup* ?**
 
 - prouvez que la restriction à 234M de `systemd-run` est mise en place avec les *CGroups* Linux
-
-> Les montants de RAM chelous c'pour vous permettre de faire des `grep` pour trouver facilement. Attention par contre, les restrictions automatiques appliquées par systemd sont exprimées en octets (pas KB ni MB) donc faut faire une ptite multiplication pour le trouver facilement. En l'occurence, un `grep -nri $(( 234 * 1024 * 1024 ))` depuis `/sys/fs/cgroup` fera le taff ;)
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo grep -nri $(( 234 * 1024 * 1024 )) /sys/fs/cgroup 2>/dev/null
+  /sys/fs/cgroup/system.slice/meow_test.service/memory.max:1:245366784
+  ```
 
 ### B. Real service
 
 🌞 **Créez un service `web.service`**
 
 - habitués nan ? Faut créer un fichier dans `/etc/systemd/system/`
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo nano /etc/systemd/system/web.service
+  [Unit]
+  Description=Serveur Web Python
+  After=network.target
+  
+  [Service]
+  ExecStart=/usr/bin/python3 -m http.server 9999
+  WorkingDirectory=/home/user1
+  Restart=always
+  User=user1
+  
+  [Install]
+  WantedBy=multi-user.target
+  ```
 - n'oubliez pas de `sudo systemctl daemon-reload` à chaque modification
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo systemctl daemon-reload
+  ```
 - ce service doit lancer un serveur web python sur le port 9999/tcp
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ sudo systemctl status web.service
+  ● web.service - Serveur Web Python
+       Loaded: loaded (/etc/systemd/system/web.service; enabled; preset: disabled)
+       Active: active (running) since Thu 2025-02-27 12:05:08 CET; 1min 13s ago
+     Main PID: 24832 (python3)
+        Tasks: 1 (limit: 2664)
+       Memory: 9.1M
+          CPU: 73ms
+       CGroup: /system.slice/web.service
+               └─24832 /usr/bin/python3 -m http.server 9999
+  ```
 
 🌞 **Restriction *CGroup***
 
@@ -193,7 +234,22 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
   - limitation d'écriture disque : 1M
   - limitation de lecture disque : 1M
   - limitation CPU : 50% d'utilisation
+    ```bash
+    MemoryMax=321M
+    IOReadBandwidthLimit=1M
+    IOWriteBandwidthLimit=1M
+    CPUQuota=50%
+    ```
 
 🌞 **Prouvez que ces restrictions ont été mises en place avec les *CGroups***
 
 - en explorant le dossier `/sys/` toujours !
+  ```bash
+  #Mémoire max : 321M
+  [user1@efrei-xmg4agau1 ~]$ cat /sys/fs/cgroup/system.slice/web.service/memory.max
+  336592896
+
+  #Limitation du CPU
+  [user1@efrei-xmg4agau1 ~]$ cat /sys/fs/cgroup/system.slice/web.service/cpu.max
+  50000 100000
+  ```
