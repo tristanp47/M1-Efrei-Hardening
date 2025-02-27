@@ -91,24 +91,53 @@ Pour rappel : la configuration actuelle des *CGroups* est dispo dans `/sys/fs/cg
    18495
    ```
 5. utilisez de nouveau `stress-ng`
+   ```bash
+   [user1@efrei-xmg4agau1 cgroup]$ sudo stress-ng --vm 1 --vm-bytes 100%
+   ```
 6. constatez que le processus `stress-ng` est tué en boucle dès qu'il remplit la RAM au delà de la limite
-
-> On rappelle que tout processus lancé par un processus existant se retrouvera par défaut dans le même *CGroup* que son parent. C'est pour ça que vous ajoutez votre shell `bash` au *CGroup* : tout ce que vous exécuterez depuis ce `bash` sera exécuté dans le même *CGroup* que lui. Ha et le truc qui tue votre processus quand il prendre trop de RAM, c'est le [**OOM-killer**](https://en.wikipedia.org/wiki/Out_of_memory).
+   ```bash
+   [user1@efrei-xmg4agau1 ~]$ watch -n0.1 "ps -eo cmd,pid,rss | grep stress"
+   ```
 
 🌞 **Créer un nouveau sous-*CGroup*** :
 
 - appelez-le `task2`
+  ```bash
+  [user1@efrei-xmg4agau1 cgroup]$sudo mkdir /sys/fs/cgroup/meow/task1
+  ```
 
 🌞 **Appliquer des restrictions CPU** :
 
 - utilisez la mécanique de `cpu.weight` pour définir des priorités différentes à `task1` et `task2`
+  ```bash
+  [user1@efrei-xmg4agau1 meow]$ echo 100 | sudo tee /sys/fs/cgroup/meow/task1/cpu.weight
+  100
+  [user1@efrei-xmg4agau1 meow]$ echo 200 | sudo tee /sys/fs/cgroup/meow/task2/cpu.weight
+  200
+  ```
 - utilisez `stress-ng` ou un bon vieux `cat /dev/random` pour lancer un processus CPU-intensive, et pour prouver que la restriction est en place
 - pour tester, vous devez :
   - lancer deux shells en même temps
   - ajouter le premier au *CGroup* `task1`
+    ```bash
+    [user1@efrei-xmg4agau1 ~]$ echo $$ | sudo tee /sys/fs/cgroup/meow/task1/cgroup.procs
+    ```
   - ajouter le deuxième au *CGroup* `task2`
+    ```bash
+    [user1@efrei-xmg4agau1 ~]$ echo $$ | sudo tee /sys/fs/cgroup/meow/task2/cgroup.procs
+    ```
   - dans les deux shells, lancer un processus CPU-intensive
+    ```bash
+    [user1@efrei-xmg4agau1 ~]$ stress-ng --cpu 1
+    stress-ng: info:  [24431] defaulting to a 1 day, 0 secs run per stressor
+    [user1@efrei-xmg4agau1 ~]$ stress-ng --cpu 1
+    stress-ng: info:  [24426] defaulting to a 1 day, 0 secs run per stressor
+    ```
   - constatez avec un `htop` par exemple que les deux processus ne se répartissent pas équitablement la puissance du CPU
+    ```bash
+    24427 user1     20   0   37476   5820   3584 R  65.8   1.2   2:06.29 stress-ng-cpu
+    24432 user1     20   0   37476   5820   3584 R  33.2   1.2   0:54.61 stress-ng-cpu
+    ```
 
 ## 3. systemd
 
