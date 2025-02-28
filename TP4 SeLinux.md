@@ -125,8 +125,16 @@ On va déplacer ça dans `/var/www/meow/`.
 - pour que le site servi sur le port 80 ne soit plus celui de `/usr/share/nginx/html` mais celui qui est dans `/var/www/meow/` (une seule ligne de conf à modifier)
 - (re)démarrez le service  `nginx`
 - visitez la page web et constater le sproutch (403)
-
-![403](./img/403.png)
+  ```bash
+  [user1@efrei-xmg4agau1 ~]$ curl 10.0.1.9
+  <html>
+  <head><title>403 Forbidden</title></head>
+  <body>
+  <center><h1>403 Forbidden</h1></center>
+  <hr><center>nginx/1.20.1</center>
+  </body>
+  </html>
+  ```
 
 🌞 **Logs !**
 
