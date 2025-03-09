@@ -86,16 +86,29 @@
 
 - avec une commande `unshare`
 - lancez un `bash` à l'intérieur
-  ```bash
-  [root@efrei-xmg4agau1 user1]# sudo unshare --pid --fork bash
-  ```
+```bash
+[user1@efrei-xmg4agau1 ~]$ sudo unshare --pid --fork --mount-proc bash
+```
 
 🌞 **Prouvez que votre nouveau *namespace* est bien là**
 
 - déjà un `ps -ef` devrait pas montrer grand chose
+```bash
+[root@localhost user1]# ps -ef
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0 03:10 pts/2    00:00:00 bash
+root          20       1  0 03:10 pts/2    00:00:00 ps -ef
+```
 - et on peut `lsns` pour voir ce nouveau *namespace*
+```bash
+[root@localhost user1]# lsns | grep pid
+4026532546 pid         2   1 root bash
+```
 - et on peut voir avec un `ls -al` dans `/proc` que ce nouveau terminal est dans un autre *namespace* `pid`
-
+```bash
+[root@localhost user1]# ls -al /proc/$$/ns/pid
+lrwxrwxrwx. 1 root root 0 Feb 26 03:11 /proc/1/ns/pid -> 'pid:[4026532546]'
+```
 
 ## 3. AND MY CONTAINERS
 
